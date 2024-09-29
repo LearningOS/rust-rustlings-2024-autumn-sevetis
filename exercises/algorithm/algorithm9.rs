@@ -2,7 +2,6 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
 
 use std::cmp::Ord;
 use std::default::Default;
@@ -38,14 +37,39 @@ where
 
     pub fn add(&mut self, value: T) {
         //TODO
+        self.count += 1;
+        if self.count == self.items.len() {
+            self.items.push(T::default());
+        }
+
+        let mut idx = self.count;
+        self.items[idx] = value;
+
+        while idx > 1 {
+            let p_idx = self.parent_idx(idx);
+            if (self.comparator)(&self.items[idx], &self.items[p_idx]) {
+                self.items.swap(idx, p_idx);
+                idx = p_idx;
+            } else {
+                break;
+            }
+        }
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
         idx / 2
     }
 
-    fn children_present(&self, idx: usize) -> bool {
+    fn child_present(&self, idx: usize) -> bool {
+        self.has_left_child(idx)
+    }
+    
+    fn has_left_child(&self, idx: usize) -> bool {
         self.left_child_idx(idx) <= self.count
+    }
+
+    fn has_right_child(&self, idx: usize) -> bool {
+        self.right_child_idx(idx) <= self.count
     }
 
     fn left_child_idx(&self, idx: usize) -> usize {
@@ -56,9 +80,41 @@ where
         self.left_child_idx(idx) + 1
     }
 
-    fn smallest_child_idx(&self, idx: usize) -> usize {
+    fn smallest_child_idx(&self, idx: usize) -> Option<usize> {
         //TODO
-		0
+        if !self.child_present(idx)  {
+            return None;
+        }
+
+        let l_idx = self.left_child_idx(idx);
+        let r_idx = if self.has_right_child(idx) {
+            Some(self.right_child_idx(idx))
+        } else {
+            None
+        };
+
+        match r_idx {
+            None => Some(l_idx),
+            Some(idx) => {
+                if (self.comparator)(&self.items[l_idx], &self.items[idx]) {
+                    Some(l_idx)
+                } else {
+                    Some(idx)
+                }
+            }
+        }
+    }
+
+    fn bubble_down(&mut self, idx: usize) {
+        let mut cur_idx = idx;
+        while let Some(child_idx) = self.smallest_child_idx(cur_idx) {
+            if (self.comparator)(&self.items[cur_idx], &self.items[child_idx]) {
+                break;
+            } else {
+                self.items.swap(cur_idx, child_idx);
+                cur_idx = child_idx;
+            }
+        }
     }
 }
 
@@ -85,7 +141,14 @@ where
 
     fn next(&mut self) -> Option<T> {
         //TODO
-		None
+		if self.count > 0 {
+            self.items.swap(1, self.count);
+            let ret = self.items.pop();
+            self.count -= 1;
+            self.bubble_down(1);
+            return ret;
+        }
+        None
     }
 }
 

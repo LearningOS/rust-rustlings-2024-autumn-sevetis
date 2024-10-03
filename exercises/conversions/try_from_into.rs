@@ -40,17 +40,15 @@ enum IntoColorError {
 impl TryFrom<(i16, i16, i16)> for Color {
     type Error = IntoColorError;
     fn try_from(tuple: (i16, i16, i16)) -> Result<Self, Self::Error> {
-        let (i, j, k) = tuple;
-        if i < 0 || i > 255 || 
-           j < 0 || j > 255 ||
-           k < 0 || k > 255 {
-            return Err(IntoColorError::IntConversion);
+        match tuple {
+            (i @ 1..256, j @ 1..256, k @ 1..256) => 
+                 Ok(Color {
+                     red: i as u8,
+                     green: j as u8,
+                     blue: k as u8,
+                }),
+            _ => Err(IntoColorError::IntConversion),
         }
-        Ok(Color {
-            red: i as u8,
-            green: j as u8,
-            blue: k as u8,
-        })
     }
 }
 
@@ -58,17 +56,15 @@ impl TryFrom<(i16, i16, i16)> for Color {
 impl TryFrom<[i16; 3]> for Color {
     type Error = IntoColorError;
     fn try_from(arr: [i16; 3]) -> Result<Self, Self::Error> {
-        for i in arr.iter() {
-            if *i < 0 || *i > 255 {
-                return Err(IntoColorError::IntConversion);
-            }
+        match arr {
+            [i @ 1..256, j @ 1..256, k @ 1..256] => 
+                 Ok(Color {
+                     red: i as u8,
+                     green: j as u8,
+                     blue: k as u8,
+                }),
+            _ => Err(IntoColorError::IntConversion),
         }
-
-        Ok(Color {
-            red: arr[0] as u8,
-            green: arr[1] as u8,
-            blue: arr[2] as u8,
-        })
     }
 }
 
@@ -79,16 +75,15 @@ impl TryFrom<&[i16]> for Color {
         if slice.len() != 3 {
             return Err(IntoColorError::BadLen);
         }
-        for i in slice.iter() {
-            if *i < 0 || *i > 255 {
-                return Err(IntoColorError::IntConversion);
-            }
+        match slice {
+            &[i @ 1..256, j @ 1..256, k @ 1..256] => 
+                 Ok(Color {
+                     red: i as u8,
+                     green: j as u8,
+                     blue: k as u8,
+                }),
+            _ => Err(IntoColorError::IntConversion),
         }
-        Ok(Color {
-            red: slice[0] as u8,
-            green: slice[1] as u8,
-            blue: slice[2] as u8,
-        })
     }
 }
 
